@@ -1,0 +1,18 @@
+fun main() {
+//    Task1().main()
+//    Task2().main()
+//    Task3().main()
+//    Task4().main()
+//    Task5().main()
+//    Taslk52().main()
+//    Task6().task1()
+//    Task6().task3()
+//    Task6().task4()
+//    Task6().task64()
+//    Task6().task65()
+//    Task6().task66()
+//    Task7().task7()
+//    Task8().task8()
+    Task9().task9()
+//    Task10().task1()
+}
