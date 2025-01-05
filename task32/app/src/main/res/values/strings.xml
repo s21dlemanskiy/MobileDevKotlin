@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">task32</string>
+    <string name="title">Input two fraction and see produce or devision result</string>
+    <string name="prod" translatable="false">Х</string>
+    <string name="equal" translatable="false">=</string>
+    <string name="devide" translatable="false">:</string>
+    <string name="numbers_must_contains_only_digits">numbers must contains only digits</string>
+    <string name="dominator_must_be_not_0">dominator must be not 0</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">task31</string>
+    <string name="title1">Введите два числа и программа их сложит</string>
+    <string name="digitwarn">разрешенны только числа</string>
+    <string name="buttonText">сложить</string>
+</resources>
