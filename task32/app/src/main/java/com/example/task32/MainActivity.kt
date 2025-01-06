@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -92,19 +93,26 @@ fun Greeting(modifier: Modifier = Modifier) {
     val signs = listOf(R.string.devide, R.string.prod)
     Row(
         modifier = modifier
+            .testTag("Tag:root")
     ) {
         Column(
             modifier = Modifier.weight(3f)
+                .testTag("Tag:1-st fraction")
         ) {
             TextField(
                 value = numerator1,
+                modifier = Modifier
+                    .testTag("Tag:1-st fraction numerator"),
                 onValueChange = {
                     input: String ->
                     numerator1 = input
                 }
             )
             Text(text = "----")
-            TextField(value = denumerator1, onValueChange = {
+            TextField(value = denumerator1,
+                modifier = Modifier
+                    .testTag("Tag:1-st fraction denumerator"),
+                onValueChange = {
                     input: String ->
                 denumerator1 = input
             })
@@ -115,19 +123,30 @@ fun Greeting(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .weight(2f)
+                .testTag("Tag:signButton")
 
         ) {
-            Text(text = context.getString(signs[sighnId]))
+            Text(
+                text = context.getString(signs[sighnId]),
+                modifier = Modifier.testTag("Tag:signText")
+            )
         }
         Column(
             modifier = Modifier.weight(3f)
+                .testTag("Tag:2-st fraction")
         ) {
-            TextField(value = numerator2, onValueChange = {
+            TextField(value = numerator2,
+                modifier = Modifier
+                    .testTag("Tag:2-st fraction numerator"),
+
+                onValueChange = {
                     input: String ->
                 numerator2 = input
             })
             Text(text = "----")
             TextField(value = denumerator2,
+                modifier = Modifier
+                    .testTag("Tag:2-st fraction denumerator"),
                 onValueChange = {input: String ->
                     denumerator2 = input
                 }
@@ -171,6 +190,7 @@ fun Greeting(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .weight(2f)
+                .testTag("Tag:processOperation")
         ) {
             Text(text = stringResource(R.string.equal))
         }
@@ -179,10 +199,17 @@ fun Greeting(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .weight(2f)
                     .align(Alignment.CenterVertically)
+                    .testTag("Tag:resultNumber")
             ) {
-                Text(text = result_n!!)
+                Text(text = result_n!!,
+                        modifier = Modifier
+                        .testTag("Tag:result fraction numerator")
+                )
                 Text(text = "----")
-                Text(text = result_d!!)
+                Text(text = result_d!!,
+                    modifier = Modifier
+                        .testTag("Tag:result fraction denumerator")
+                )
             }
         }
         if (alertMessage != null) {
@@ -215,7 +242,8 @@ fun AlertMessage(alertMessage: String?, onDismissRequest: () -> Unit) {
                     text = alertMessage.toString(),
                     modifier = Modifier
                         .fillMaxSize()
-                        .wrapContentSize(Alignment.Center),
+                        .wrapContentSize(Alignment.Center)
+                        .testTag("Tag:alert message text"),
                     textAlign = TextAlign.Center,
                 )
             }
