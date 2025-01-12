@@ -23,6 +23,8 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     val loading: StateFlow<Boolean> = _loading
     private var _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage
+    private var _dataFromDB = MutableStateFlow<Boolean>(false)
+    val dataFromDB = _dataFromDB
 
     private val applicationComponent: ApplicationComponent = App.get(getApplication()).applicationComponent
     private val songsController = SongsController(applicationComponent)
@@ -37,18 +39,36 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
             val songs = songsController.removeSong(id){ code ->
                 errorMessage.value = "$code fetch data error"
             }
-            _songs.value = songs.orEmpty()
-        }.invokeOnCompletion { _loading.value = false }
+            _songs.value = songs
+        }.invokeOnCompletion {
+            _loading.value = false
+            _dataFromDB.value = false
+        }
     }
 
     fun updateSongs() {
         _loading.value = true
         viewModelScope.launch {
             val songs = songsController.getSongs(){ code ->
-                errorMessage.value = "$code fetch data error"
+                errorMessage.value = code.toString()
             }
+            _songs.value = songs
+        }.invokeOnCompletion {
+            _loading.value = false
+            _dataFromDB.value = false
+        }
+    }
+
+    fun extractSongsFromLocalDB() {
+        _errorMessage.value = null
+        _loading.value = true
+        viewModelScope.launch {
+            val songs = songsController.extractSongsFromLocalDB()
             _songs.value = songs.orEmpty()
-        }.invokeOnCompletion { _loading.value = false }
+        }.invokeOnCompletion {
+            _loading.value = false
+            _dataFromDB.value = true
+        }
     }
 
 }

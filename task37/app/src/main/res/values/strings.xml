@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">task37</string>
+    <string name="take_data_from_db">Take data from DB</string>
+    <string name="not_representative_warning">Data is extracted from DB and may be not representative</string>
 </resources>

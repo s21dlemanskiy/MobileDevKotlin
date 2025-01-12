@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.Scaffold
 import com.example.task37.ui.theme.Task37Theme
 
 class MainActivity : ComponentActivity() {
@@ -12,7 +13,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Task37Theme {
-                SongListScreen()
+                Scaffold { padding ->
+                    SongListScreen(padding)
+                }
             }
         }
     }

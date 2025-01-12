@@ -2,10 +2,13 @@ package com.example.task37.model
 
 import com.example.task37.model.models.RawAuthor
 import com.example.task37.model.models.RawSong
+import kotlinx.coroutines.CancellationException
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 
 interface SongRetrofitService {
         @GET("/songs")
@@ -19,5 +22,22 @@ interface SongRetrofitService {
 
         @GET("/remove/author/{id}")
         suspend fun deleteAuthor(@Path("id") id: Int): Response<List<RawAuthor>>
+
+        companion object {
+                @JvmStatic
+                suspend fun <T> safeApiCall(apiCall: suspend () -> T): Result<T> {
+                        return try {
+                                Result.success(apiCall())
+                        } catch (e: CancellationException) {
+                                throw e.cause ?: e // Пробрасываем причину отмены или саму отмену
+                        } catch (e: ConnectException) {
+                                Result.failure(e)
+                        } catch (e: SocketTimeoutException) {
+                                Result.failure(e)
+                        } catch (e: Exception) {
+                                Result.failure(e)
+                        }
+                }
+        }
 
 }
