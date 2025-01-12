@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">task39</string>
+    <string name="take_data_from_db">Take data from DB</string>
+    <string name="not_representative_warning">Data is extracted from DB and may be not representative</string>
+    <string name="search_text">Поиск песен...</string>
+    <string name="search_description">Search</string>
+    <string name="clear_search_descritpion">Clear search</string>
+    <string name="autor_pre_string">"Автор: "</string>
+</resources>
