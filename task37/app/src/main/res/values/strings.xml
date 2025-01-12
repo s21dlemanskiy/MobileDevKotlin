@@ -5,4 +5,5 @@
     <string name="search_text">Поиск песен...</string>
     <string name="search_description">Search</string>
     <string name="clear_search_descritpion">Clear search</string>
+    <string name="autor_pre_string">"Автор: "</string>
 </resources>

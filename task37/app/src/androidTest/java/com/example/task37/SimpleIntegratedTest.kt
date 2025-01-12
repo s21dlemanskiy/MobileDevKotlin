@@ -1,9 +1,14 @@
 package com.example.task37
 
 import android.util.Log
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.printToLog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.task37.model.RetrofitInstance
@@ -12,6 +17,8 @@ import com.example.task37.utils.RawSongsList
 import com.example.task37.utils.loadJsonAsObject
 import com.example.task37.utils.mockPath
 import com.example.task37.view.MainActivity
+import com.example.task37.view.SongListScreen
+import com.example.task37.viewmodel.SongViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
@@ -35,6 +42,7 @@ import java.net.InetAddress
 class SimpleIntegratedTest {
     val songsAssetPath = "songsWebMock.json"
     val authorsAssetPath = "authorsWebMock.json"
+    lateinit var songViewModel: SongViewModel
 
     val testAddress = InetAddress.getByName("localhost")
     val testWebPort = 8181
@@ -48,26 +56,17 @@ class SimpleIntegratedTest {
     }
 
     @get:Rule(order = 1)
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
+    val composeTestRule =  createComposeRule()
 
 
     @Before
     fun setUp() {
-//        webServerRule.startWebServer()
+        composeTestRule.setContent {
+            songViewModel = viewModel()
+            SongListScreen(songViewModel = songViewModel, padding = PaddingValues.Absolute())
+        }
         RetrofitInstance.updateBaseUrl(webServerRule.webServer.url("/").toUrl().toString())
     }
-//
-//    @After
-//    fun tearDown() {
-//        webServerRule.shutdownWebServer()
-//    }
-
-//    private lateinit var mockWebServer: MockWebServer
-//    @Before
-//    fun setup() {
-//        mockWebServer = MockWebServer()
-//        mockWebServer.start(InetAddress.getByName("localhost"), 8181)
-//    }
 
     @Test
     fun useAppContext() {
@@ -90,22 +89,36 @@ class SimpleIntegratedTest {
 
     @Test
     fun printTree() {
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil {
+            songViewModel.songs.value.isNotEmpty()
+        }
         composeTestRule.onRoot().printToLog("UITree")
     }
 
     @Test
     fun getSongsList() {
+        composeTestRule.waitUntil {
+            songViewModel.songs.value.isNotEmpty()
+        }
         val rawSongs: RawSongsList = loadJsonAsObject<RawSongsList>(songsAssetPath)
         val manager = SongsManager(composeTestRule, webServerRule)
-        Log.i("MyTest", "ssss")
         Log.i("MyTest", rawSongs.songs.toString())
-        Log.i("MyTest", rawSongs.songs.map { it.id }.toString())
-        for (id in rawSongs.songs.map { it.id }) {
-//            manager.checkCardExists(id)
+        rawSongs.songs.forEach {
+            Log.i("MyTest", rawSongs.songs.toString())
+            manager.checkCardExists(it.id)
         }
     }
-//
 
-
+    @Test
+    fun contentCompare() {
+        composeTestRule.waitUntil {
+            songViewModel.songs.value.isNotEmpty()
+        }
+        val rawSongs: RawSongsList = loadJsonAsObject<RawSongsList>(songsAssetPath)
+        val manager = SongsManager(composeTestRule, webServerRule)
+        Log.i("MyTest", rawSongs.songs.toString())
+        rawSongs.songs.forEach {
+            assertEquals(it, manager.getCartContent(it.id, it.author_id))
+        }
+    }
 }

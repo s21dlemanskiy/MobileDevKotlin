@@ -35,9 +35,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.task37.R
 import com.example.task37.viewmodel.models.Song
 
 const val MAX_SHOWN_CONTENT_LINES = 4
@@ -86,7 +88,7 @@ fun SongItem(song: Song, onRemove: () -> Unit) {
                     )
 
                     Text(
-                        text = "Автор: ${song.author}",
+                        text = stringResource(R.string.autor_pre_string) + song.author,
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontStyle = FontStyle.Italic,
                             color = MaterialTheme.colorScheme.primary
