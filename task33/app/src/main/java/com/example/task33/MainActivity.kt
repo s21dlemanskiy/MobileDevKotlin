@@ -64,9 +64,7 @@ class MainActivity : ComponentActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as MyService.LocalBinder
             myService = binder.getService()
-//            onConect()
             Log.i("MyServiceInActivity", myService.toString())
-            // Теперь вы можете вызывать методы из сервиса
             MinWindow()
         }
 

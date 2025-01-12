@@ -1,6 +1,7 @@
 package com.example.task37.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,22 +16,43 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class SongViewModel(application: Application) : AndroidViewModel(application) {
+    private var _allSongs = MutableStateFlow<List<Song>>(emptyList())
     private var _songs = MutableStateFlow<List<Song>>(emptyList())
     // это делается для того чтобы observer не мог менять его
     val songs: StateFlow<List<Song>> = _songs
 
-    private var _loading = MutableStateFlow<Boolean>(false)
+    private var _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
     private var _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage
-    private var _dataFromDB = MutableStateFlow<Boolean>(false)
+    private var _dataFromDB = MutableStateFlow(false)
     val dataFromDB = _dataFromDB
+
+    private var _searchText = MutableStateFlow("")
+    val searchText = _searchText
 
     private val applicationComponent: ApplicationComponent = App.get(getApplication()).applicationComponent
     private val songsController = SongsController(applicationComponent)
 
     init {
+        Log.i("ViewModel", "View model ${this::class.java.name} created with hashCode: ${this.hashCode()}")
         updateSongs()
+    }
+    fun setSearchText(text: String){
+        Log.i("ViewModel", "Set search text: $text")
+        _searchText.value = text
+    }
+
+    private suspend fun performSearch(): List<Song>? =
+        songsController.extractSongsFromLocalDB(searchText.value)
+
+    fun search(){
+        _loading.value = true
+        viewModelScope.launch {
+            _songs.value = performSearch().orEmpty()
+        }.invokeOnCompletion {
+            _loading.value = false
+        }
     }
 
     fun removeSong(id: Int){
@@ -39,7 +61,8 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
             val songs = songsController.removeSong(id){ code ->
                 errorMessage.value = "$code fetch data error"
             }
-            _songs.value = songs
+            Log.i("ViewModel", "get songs: $songs")
+            _songs.value = performSearch().orEmpty()
         }.invokeOnCompletion {
             _loading.value = false
             _dataFromDB.value = false
@@ -52,19 +75,19 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
             val songs = songsController.getSongs(){ code ->
                 errorMessage.value = code.toString()
             }
-            _songs.value = songs
+            Log.i("ViewModel", "get songs: $songs")
+            _songs.value = performSearch().orEmpty()
         }.invokeOnCompletion {
             _loading.value = false
             _dataFromDB.value = false
         }
     }
 
-    fun extractSongsFromLocalDB() {
+    fun stopLoadingAndExtractSongsFromLocalDB() {
         _errorMessage.value = null
         _loading.value = true
         viewModelScope.launch {
-            val songs = songsController.extractSongsFromLocalDB()
-            _songs.value = songs.orEmpty()
+            _songs.value = performSearch().orEmpty()
         }.invokeOnCompletion {
             _loading.value = false
             _dataFromDB.value = true

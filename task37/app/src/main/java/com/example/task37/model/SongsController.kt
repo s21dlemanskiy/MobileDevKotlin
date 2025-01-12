@@ -71,9 +71,10 @@ class SongsController(
      * @throws IllegalStateException неправильное состояние базы данных
      * @throws SQLiteConstraintException нарушение ограничений БД
      */
-    private suspend fun getSongsFromCache(): List<DatabaseSongsModel> {
+    private suspend fun getSongsWithText(text: String): List<DatabaseSongsModel> {
+        Log.i("DB", "Search songs with $text")
         return withContext(Dispatchers.IO) {
-            songsDAO.getSongs()
+            songsDAO.getSongsWithText(text)
         }
     }
 
@@ -166,9 +167,9 @@ class SongsController(
         songs.mapToViewModelSongsModel()
     }
 
-    suspend fun extractSongsFromLocalDB(): List<ViewModelSongsModel>? = coroutineScope {
+    suspend fun extractSongsFromLocalDB(searchText: String): List<ViewModelSongsModel>? = coroutineScope {
         try {
-            getSongsFromCache().mapToViewModelSongsModel()
+            getSongsWithText(searchText).mapToViewModelSongsModel()
         } catch (e: IllegalStateException){
             Log.w("DB", "Error interaction with DB $e")
             null
