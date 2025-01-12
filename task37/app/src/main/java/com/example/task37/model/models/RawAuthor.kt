@@ -1,6 +1,8 @@
 package com.example.task37.model.models
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 data class RawAuthor(
-    val id: Int,
-    val name: String
+    @JsonProperty("id") val id: Int,
+    @JsonProperty("name") val name: String
 )

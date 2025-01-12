@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.AndroidTest
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -5,6 +7,11 @@ plugins {
 }
 
 android {
+    sourceSets {
+        named("androidTest") {
+            assets.srcDirs("src/androidTest/assets")
+        }
+    }
     namespace = "com.example.task37"
     compileSdk = 35
 
@@ -55,6 +62,7 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
     implementation(libs.convertergson)
     implementation(libs.retrofit)
+    implementation(libs.retrofit.jackson)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -71,6 +79,9 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.mockwebserver)
+    implementation(libs.okhttp)
+    androidTestImplementation(libs.jackson)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

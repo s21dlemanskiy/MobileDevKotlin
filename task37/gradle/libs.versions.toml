@@ -12,6 +12,9 @@ roomCommon = "2.6.1"
 roomKtx = "2.6.1"
 runtimeLivedata = "1.7.6"
 retrofit = "2.11.0"
+webserverDSL = "1.0.0"
+okhttp = "4.9.3"
+jackson = "2.18.2"
 
 [libraries]
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
@@ -35,7 +38,12 @@ androidx-room-common = { group = "androidx.room", name = "room-common", version.
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-room-kapt = { group = "androidx.room", name = "room-compiler", version.ref = "roomKtx" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
-
+mockwebserver = { group = "com.yandex.classifieds", name = "mockwebserver-dsl", version.ref = "webserverDSL" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+jackson = {group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson"}
+retrofit-jackson = {group = "com.squareup.retrofit2", name = "converter-jackson", version.ref = "retrofit"}
+#jackson-databind = {group = "com.fasterxml.jackson.core", name = "converter-jackson", version.ref = "retrofit"}
+#"com.fasterxml.jackson.core:jackson-databind:2.14.2"
 
 [plugins]
 kapt = { id = "org.jetbrains.kotlin.kapt", version = "2.1.0"}
