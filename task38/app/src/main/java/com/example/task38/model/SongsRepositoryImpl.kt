@@ -5,34 +5,35 @@ import com.example.task38.ioc.ApplicationComponent
 import com.example.task38.model.SongRetrofitService.Companion.safeApiCall
 import com.example.task38.model.models.RawAuthor
 import com.example.task38.model.models.RawSong
+import com.example.task38.viewmodel.models.Song
 import kotlinx.coroutines.Dispatchers
-import com.example.task38.model.models.Song as DatabaseSongsModel
-import com.example.task38.viewmodel.models.Song as ViewModelSongsModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
-class SongsController(
-    private val applicationComponent: ApplicationComponent
-) {
-    private val api = applicationComponent.api
-    private val songsDAO = applicationComponent.songsDAO
+class SongsRepositoryImpl(
+    applicationComponent: ApplicationComponent,
+    private val api: SongRetrofitService = applicationComponent.api,
+    private val songsDAO: SongsDAO = applicationComponent.songsDAO
+): SongsRepository {
 
 
-    private fun List<RawSong>.mapToDatabaseSongsModel(authors: Map<Int, RawAuthor>): List<DatabaseSongsModel> {
-         return map { DatabaseSongsModel(
-            id = it.id,
-            title = it.title,
-            text = it.text,
-            author = authors.getOrDefault(it.author_id, null)?.name ?: "no author",
-            authorId = it.author_id
-        ) }
+    private fun List<RawSong>.mapToDatabaseSongsModel(authors: Map<Int, RawAuthor>): List<com.example.task38.model.models.Song> {
+        return map {
+            com.example.task38.model.models.Song(
+                id = it.id,
+                title = it.title,
+                text = it.text,
+                author = authors.getOrDefault(it.author_id, null)?.name ?: "no author",
+                authorId = it.author_id
+            )
+        }
     }
 
-    private fun List<DatabaseSongsModel>.mapToViewModelSongsModel(): List<ViewModelSongsModel>{
+    private fun List<com.example.task38.model.models.Song>.mapToViewModelSongsModel(): List<Song>{
         return map {
-            ViewModelSongsModel(
+            Song(
                 id = it.id,
                 title = it.title,
                 text = it.text,
@@ -49,7 +50,7 @@ class SongsController(
      * @throws IllegalStateException неправильное состояние базы данных
      * @throws SQLiteConstraintException нарушение ограничений БД
      */
-    private suspend fun updateCache(songs: List<DatabaseSongsModel>): List<DatabaseSongsModel> {
+    private suspend fun updateCache(songs: List<com.example.task38.model.models.Song>): List<com.example.task38.model.models.Song> {
         return withContext(Dispatchers.IO) {
             songsDAO.clearAndInsert(songs)
             songsDAO.getSongs()
@@ -63,7 +64,7 @@ class SongsController(
      * @throws IllegalStateException неправильное состояние базы данных
      * @throws SQLiteConstraintException нарушение ограничений БД
      */
-    private suspend fun getSongsWithText(text: String): List<DatabaseSongsModel> {
+    private suspend fun getSongsWithText(text: String): List<com.example.task38.model.models.Song> {
         Log.i("DB", "Search songs with $text")
         return withContext(Dispatchers.IO) {
             songsDAO.getSongsWithText(text)
@@ -101,8 +102,8 @@ class SongsController(
      * @property onResponseFailure callback to be performon Response failure with any not 200 code
      * @return list of songs
      * */
-    suspend fun getSongs(onResponseFailure: (code: Int) -> Unit): List<ViewModelSongsModel> = coroutineScope {
-        var songs: List<DatabaseSongsModel>
+    override suspend fun getSongs(onResponseFailure: (code: Int) -> Unit): List<Song> = coroutineScope {
+        var songs: List<com.example.task38.model.models.Song>
 
         while(true) {
             val rawSongsDeferred = async { safeApiCall {api.getSongs()} }
@@ -134,8 +135,8 @@ class SongsController(
      * @property onResponseFailure callback to be performon Response failure with any not 200 code
      * @return list of songs
      * */
-    suspend fun removeSong(id: Int, onResponseFailure: (code: Int) -> Unit): List<ViewModelSongsModel> = coroutineScope {
-        var songs: List<DatabaseSongsModel>
+    override suspend fun removeSong(id: Int, onResponseFailure: (code: Int) -> Unit): List<Song> = coroutineScope {
+        var songs: List<com.example.task38.model.models.Song>
         while(true) {
             val rawSongsDeferred = async { safeApiCall {api.deleteSong(id)} }
             val rawAuthorDeferred = async { safeApiCall {api.getAuthors()} }
@@ -159,7 +160,14 @@ class SongsController(
         songs.mapToViewModelSongsModel()
     }
 
-    suspend fun extractSongsFromLocalDB(searchText: String): List<ViewModelSongsModel>? = coroutineScope {
+
+    /**
+     * By text find songs that contains it (or author or title contains this text)
+     *
+     * @property searchText text to be matched
+     * @return list of songs
+     * */
+    override suspend fun searchSongsInLocalDB(searchText: String): List<Song>? = coroutineScope {
         try {
             getSongsWithText(searchText).mapToViewModelSongsModel()
         } catch (e: IllegalStateException){

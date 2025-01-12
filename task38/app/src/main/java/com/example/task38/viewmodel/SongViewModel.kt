@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task38.App
 import com.example.task38.ioc.ApplicationComponent
-import com.example.task38.model.SongsController
+import com.example.task38.model.SongsRepositoryImpl
 import com.example.task38.viewmodel.models.Song
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,66 +29,66 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     val searchText = _searchText
 
     private val applicationComponent: ApplicationComponent = App.get(getApplication()).applicationComponent
-    private val songsController = SongsController(applicationComponent)
+    private val songsRepository = SongsRepositoryImpl(applicationComponent)
 
     init {
         Log.i("ViewModel", "View model ${this::class.java.name} created with hashCode: ${this.hashCode()}")
         updateSongs()
     }
+
     fun setSearchText(text: String){
         Log.i("ViewModel", "Set search text: $text")
         _searchText.value = text
     }
 
     private suspend fun performSearch(): List<Song>? =
-        songsController.extractSongsFromLocalDB(searchText.value)
+        songsRepository.searchSongsInLocalDB(searchText.value)
+
+    /**
+     * Process code in viewModelScope adding _loading update in response start and end
+     *
+     * @property dataFromCache на что поменять _dataFromDB после завершения операции null соотвествует не менять
+     * @property callback функция вызываемая внутри viewModelScope
+     * */
+    fun performSuspendRequest(dataFromCache: Boolean?, callback: suspend ()-> Unit) {
+        _loading.value = true
+        viewModelScope.launch {
+            callback()
+            _songs.value = performSearch().orEmpty()
+            if (dataFromCache != null) _dataFromDB.value = dataFromCache
+        }.invokeOnCompletion {
+            _loading.value = false
+        }
+    }
 
     fun search(){
-        _loading.value = true
-        viewModelScope.launch {
-            _songs.value = performSearch().orEmpty()
-        }.invokeOnCompletion {
-            _loading.value = false
+        performSuspendRequest(null) {
         }
     }
 
-    fun removeSong(id: Int){
-        _loading.value = true
-        viewModelScope.launch {
-            val songs = songsController.removeSong(id){ code ->
-                errorMessage.value = "$code fetch data error"
-            }
-            Log.i("ViewModel", "get songs: $songs")
-            _songs.value = performSearch().orEmpty()
-        }.invokeOnCompletion {
-            _loading.value = false
-            _dataFromDB.value = false
-        }
-    }
 
-    fun updateSongs() {
-        _loading.value = true
-        viewModelScope.launch {
-            val songs = songsController.getSongs(){ code ->
+    fun removeSong(id: Int) {
+        performSuspendRequest(false) {
+            val songs = songsRepository.removeSong(id) { code ->
                 errorMessage.value = code.toString()
             }
             Log.i("ViewModel", "get songs: $songs")
-            _songs.value = performSearch().orEmpty()
-        }.invokeOnCompletion {
-            _loading.value = false
-            _dataFromDB.value = false
+        }
+
+    }
+
+    fun updateSongs() {
+        performSuspendRequest (false) {
+            val songs = songsRepository.getSongs() { code ->
+                errorMessage.value = code.toString()
+            }
+            Log.i("ViewModel", "get songs: $songs")
         }
     }
 
     fun stopLoadingAndExtractSongsFromLocalDB() {
         _errorMessage.value = null
-        _loading.value = true
-        viewModelScope.launch {
-            _songs.value = performSearch().orEmpty()
-        }.invokeOnCompletion {
-            _loading.value = false
-            _dataFromDB.value = true
-        }
+        performSuspendRequest(true) {}
     }
 
 }
