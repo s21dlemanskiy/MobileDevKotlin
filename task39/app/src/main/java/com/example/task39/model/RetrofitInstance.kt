@@ -8,7 +8,7 @@ object RetrofitInstance {
     private var baseUrl = "http://10.0.2.2:8181/"
     var retrofit: Retrofit? = null
 
-    
+
     private val jackson = JacksonConverterFactory.create()
 
     fun updateBaseUrl(newUrl: String) {
